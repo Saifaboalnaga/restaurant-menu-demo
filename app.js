@@ -17,14 +17,8 @@ function renderCats() {
   ).join("");
 }
 
-function renderGrid() {
-  const q = state.q.trim().toLowerCase();
-  const list = PRODUCTS.filter(p =>
-    (state.cat === "all" || p.cat === state.cat) &&
-    (!q || p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q))
-  );
-  $("#empty").hidden = list.length > 0;
-  $("#grid").innerHTML = list.map((p, i) => `
+function cardHTML(p, i) {
+  return `
     <article class="card" style="animation-delay:${i * 40}ms" data-id="${p.id}">
       <div class="img" style="background:${p.color}"><span>${p.icon}</span>${p.tag ? `<em>${p.tag}</em>` : ""}</div>
       <div class="info">
@@ -35,7 +29,26 @@ function renderGrid() {
           <button class="add" data-add="${p.id}" aria-label="أضف ${p.name}">+</button>
         </div>
       </div>
-    </article>`).join("");
+    </article>`;
+}
+
+function renderGrid() {
+  const q = state.q.trim().toLowerCase();
+  const list = PRODUCTS.filter(p =>
+    (state.cat === "all" || p.cat === state.cat) &&
+    (!q || p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q))
+  );
+  $("#empty").hidden = list.length > 0;
+  // Menu layout: one titled section per category (Burgers, Pizza, Drinks, Desserts)
+  let i = 0;
+  $("#grid").innerHTML = CATEGORIES.filter(c => c.id !== "all").map(c => {
+    const items = list.filter(p => p.cat === c.id);
+    if (!items.length) return "";
+    return `<section class="menu-sec" id="sec-${c.id}">
+      <h2 class="sec-title">${c.icon} ${c.name} <small>${items.length} أصناف</small></h2>
+      <div class="grid">${items.map(p => cardHTML(p, i++)).join("")}</div>
+    </section>`;
+  }).join("");
 }
 
 /* ---------- product modal ---------- */
